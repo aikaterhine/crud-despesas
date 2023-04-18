@@ -5,14 +5,17 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { v4 as uuidv4} from 'uuid';
+
+const id = uuidv4();
 
 export type MockType<T> = {
   [P in keyof T]?: jest.Mock<unknown>;
 };
 
 export const repositoryMockValue = {
-  create: jest.fn().mockImplementation((user: CreateUserDto) => Promise.resolve({id: 'e95fe8ab-bc50-4358-a746-f07c4409c9c2', ...user})),
-  findOneByEmail: jest.fn().mockImplementation((email: string) => Promise.resolve({id: 'e95fe8ab-bc50-4358-a746-f07c4409c9c2', name: 'Mock User', email})),
+  create: jest.fn().mockImplementation((user: CreateUserDto) => Promise.resolve({id, ...user})),
+  findOneByEmail: jest.fn().mockImplementation((email: string) => Promise.resolve({id, name: 'Mock User', email})),
 };
 
 describe('UsersController', () => {
@@ -50,7 +53,7 @@ describe('UsersController', () => {
         const result = await usersController.create(user)
         
         expect(result).toBeDefined();
-        expect(result).toEqual({message: 'User created successfully.', user: { id: 'e95fe8ab-bc50-4358-a746-f07c4409c9c2', ...user}});
+        expect(result).toEqual({message: 'User created successfully.', user: { id, ...user}});
         expect(usersService.create).toHaveBeenCalledWith(user);
     });
 
@@ -61,7 +64,7 @@ describe('UsersController', () => {
       const result = await usersController.findOneByEmail(user.email);
         
       expect(result).toBeDefined();
-      expect(result).toEqual({message: 'User found successfully.', user: { id: 'e95fe8ab-bc50-4358-a746-f07c4409c9c2', ...user}});
+      expect(result).toEqual({message: 'User found successfully.', user: { id, ...user}});
       expect(usersService.findOneByEmail).toHaveBeenCalledWith(user.email);
     });
   })

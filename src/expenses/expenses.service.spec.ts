@@ -12,6 +12,8 @@ import { User } from '../../src/users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4} from 'uuid';
 
+const id = uuidv4();
+
 export type MockType<T> = {
   [P in keyof T]?: jest.Mock<unknown>;
 };
@@ -25,7 +27,7 @@ export const jwtMockValue = {
 };
 
 export const userMockValue = {
-  findOneByEmail: jest.fn().mockImplementation((email: string) => Promise.resolve({id: 'e95fe8ab-bc50-4358-a746-f07c4409c9c2', name: 'Mock User', email})),
+  findOneByEmail: jest.fn().mockImplementation((email: string) => Promise.resolve({id, name: 'Mock User', email})),
 };
 
 export const repositoryMockFactory: () => MockType<Repository<any>> = jest.fn(() => ({
@@ -49,9 +51,7 @@ describe('ExpensesService', () => {
   let user: CreateUserDto;
   let expense: CreateExpenseDto;
 
-  let expenseCreated: { expense: { owner: { email: string; name: string; id: string; }; description: string; cost: number; date: Date; }; };
-
-  const id = uuidv4();
+  let expenseCreated: { owner: { email: string; name: string; id: string; }; description: string; cost: number; date: Date; };
 
   beforeEach(() => {
     user = {
@@ -65,7 +65,7 @@ describe('ExpensesService', () => {
         date: new Date('19-09-2020')
     };
 
-    expenseCreated = {expense: { ...expense, owner: { id, ...user}}};
+    expenseCreated = { ...expense, owner: { id, ...user}};
   });
 
   beforeEach(async () => {
@@ -100,7 +100,7 @@ describe('ExpensesService', () => {
 
         expect(result).toBeDefined();
         expect(result).toEqual(expenseCreated);
-        //expect(expenseRepositoryMock.save).resolves.toHaveBeenCalledWith(expenseCreated);
+        expect(expenseRepositoryMock.save).toHaveBeenCalledWith(expenseCreated);
     });
 
   })
