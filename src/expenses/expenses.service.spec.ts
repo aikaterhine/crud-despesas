@@ -8,7 +8,6 @@ import { Expense } from './entities/expense.entity';
 import { ExpensesService } from './expenses.service';
 import { UsersService } from '../../src/users/users.service';
 import { AuthService } from '../../src/auth/auth.service';
-import { User } from '../../src/users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4} from 'uuid';
 

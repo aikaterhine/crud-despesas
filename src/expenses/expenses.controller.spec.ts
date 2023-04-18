@@ -1,9 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
-import { Expense } from './entities/expense.entity';
 import { ExpensesController } from './expenses.controller';
 import { ExpensesService } from './expenses.service';
 import { v4 as uuidv4} from 'uuid';
