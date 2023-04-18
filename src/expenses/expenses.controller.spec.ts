@@ -10,6 +10,7 @@ import { v4 as uuidv4} from 'uuid';
 import { MailService } from '../../src/mail/mail.service';
 import { UsersService } from '../../src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { UpdateExpenseDto } from './dto/update-expense.dto';
 
 const id = uuidv4();
 
@@ -20,6 +21,9 @@ export type MockType<T> = {
 export const repositoryMockValue = {
   create: jest.fn().mockImplementation((user: CreateUserDto, expense: CreateExpenseDto) => Promise.resolve({ ...expense, owner: { id, ...user}})),
   findAllByOwner: jest.fn().mockImplementation((user: CreateUserDto) => Promise.resolve({ description: 'Netflix account', cost: 19.90, date: new Date('01-21-2023')} )),
+  findOneByOwner: jest.fn().mockImplementation((id: string, email: string) => Promise.resolve({ description: 'Netflix account', cost: 19.90, date: new Date('01-21-2023')} )),
+  update: jest.fn().mockImplementation((id: number, updateExpenseDto: UpdateExpenseDto, user: CreateUserDto) => Promise.resolve({ description: 'Netflix account premium', cost: 39.90, date: new Date('01-21-2023')} )),
+  remove: jest.fn().mockImplementation((id: string, email: string) => Promise.resolve({} )),
 };
 
 export const mailMockValue = {
@@ -41,10 +45,12 @@ describe('ExpensesController', () => {
 
   let user: CreateUserDto;
   let expense: CreateExpenseDto;
+  let expenseUpdate: CreateExpenseDto;
+
   let requestMock: Request;
 
   let expenseCreated: { expense: { owner: { email: string; name: string; id: string; }; description: string; cost: number; date: Date; }; };
-  let arrayExpenses;
+  let arrayExpenses: { expenses: { description: string; cost: number; date: Date; }; };
 
   beforeEach(() => {
     user = {
@@ -58,11 +64,15 @@ describe('ExpensesController', () => {
       date: new Date('01-21-2023')
     };
 
+    expenseUpdate = {
+        description: 'Netflix account premium',
+        cost: 39.90,
+        date: new Date('01-21-2023')
+    };
+
     expenseCreated = {expense: { ...expense, owner: { id, ...user}}};
 
-    arrayExpenses = {expenses: {description: 'Netflix account',
-    cost: 19.90,
-    date: new Date('01-21-2023')}};
+    arrayExpenses = {expenses: {description: 'Netflix account', cost: 19.90, date: new Date('01-21-2023')}};
 
     requestMock = {
         query: {},
@@ -110,6 +120,36 @@ describe('ExpensesController', () => {
         expect(result).toBeDefined();
         expect(result).toEqual({message: 'Expenses found successfully.', ...arrayExpenses});
         expect(expensesService.findAllByOwner).toHaveBeenCalledWith(user);
+    });
+  })
+
+  describe('findOne', () => {
+    it('should find a expense by user', async () => {        
+        const result = await expensesController.findOne(id, requestMock)
+        
+        expect(result).toBeDefined();
+        expect(result).toEqual({message: 'Expense found successfully.', ...{expense: expense}});
+        expect(expensesService.findOneByOwner).toHaveBeenCalledWith(+id, user);
+    });
+  })
+
+  describe('update', () => {
+    it('should update a expense by id', async () => {        
+        const result = await expensesController.update(id, expenseUpdate, requestMock)
+        
+        expect(result).toBeDefined();
+        expect(result).toEqual({message: 'Expense updated successfully.', ...{expense: expenseUpdate}});
+        expect(expensesService.update).toHaveBeenCalledWith(+id, expenseUpdate, user);
+    });
+  })
+
+  describe('remove', () => {
+    it('should remove a expense by id', async () => {        
+        const result = await expensesController.remove(id, requestMock)
+        
+        expect(result).toBeDefined();
+        expect(result).toEqual({message: 'Expense deleted successfully.'});
+        expect(expensesService.remove).toHaveBeenCalledWith(+id, user);
     });
   })
 });

@@ -40,7 +40,7 @@ export class ExpensesController {
     const user = <CreateUserDto>req.user;
 
     const expense = await this.expensesService.findOneByOwner(+id, user);
-
+    
     return {
       expense,
       message: 'Expense found successfully.',
