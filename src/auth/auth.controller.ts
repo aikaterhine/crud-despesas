@@ -9,6 +9,11 @@ export class AuthController {
 
   @Post('auth')
   async login(@Body() user: AuthDto) {
-    return this.authService.validateUser(user.email, user.password);
+    const access_token = await this.authService.validateUser(user.email, user.password);
+    
+    return {
+      access_token,
+      message: 'Successful login.',
+    };
   }
 }

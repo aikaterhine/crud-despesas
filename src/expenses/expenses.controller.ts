@@ -11,26 +11,27 @@ export class ExpensesController {
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
-  create(@Body() createExpenseDto: CreateExpenseDto, @Req() req: any) {
+  async create(@Body() createExpenseDto: CreateExpenseDto, @Req() req: any) {
     const user = <CreateUserDto>req.user;
-    const expense = this.expensesService.create(user, createExpenseDto);
 
-    if(!expense)
-      throw new BadRequestException('Error creating your expense.')
+    const expense = await this.expensesService.create(user, createExpenseDto);
 
-    return expense;
+    return {
+      expense,
+      message: 'Expense created successfully. Confirmation sent by email.',
+    };
   }
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
   async findAll(@Req() req: any) {
     const user = <CreateUserDto>req.user;
-
     const expenses = await this.expensesService.findAllByOwner(user);
-    if (!expenses)
-      throw new NotFoundException('No expenses that you own were found.')
-
-    return expenses;
+    
+    return {
+      expenses,
+      message: 'Expenses found successfully.',
+    };
   }
 
   @Get(':id')
@@ -38,11 +39,12 @@ export class ExpensesController {
   async findOne(@Param('id') id: string, @Req() req: any) {
     const user = <CreateUserDto>req.user;
 
-    const expenses = await this.expensesService.findOneByOwner(+id, user);
-    if (!expenses)
-      throw new NotFoundException('No expenses that you own were found using this id.')
+    const expense = await this.expensesService.findOneByOwner(+id, user);
 
-    return expenses;
+    return {
+      expense,
+      message: 'Expense found successfully.',
+    };
   }
 
   @Patch(':id')
@@ -50,12 +52,12 @@ export class ExpensesController {
   async update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto, @Req() req: any) {
     const user = <CreateUserDto>req.user;
 
-    const updatedExpense = await this.expensesService.update(+id, updateExpenseDto, user);
+    const expense = await this.expensesService.update(+id, updateExpenseDto, user);
 
-    if (!updatedExpense || updatedExpense.affected === 0)
-      throw new NotFoundException('No expenses that you own were found using this id.')
-
-    return updateExpenseDto;
+    return {
+      expense,
+      message: 'Expense updated successfully.',
+    };
   }
 
   @Delete(':id')
@@ -63,11 +65,10 @@ export class ExpensesController {
   async remove(@Param('id') id: string, @Req() req: any) {
     const user = <CreateUserDto>req.user;
 
-    const removedExpense = await this.expensesService.remove(+id, user);
+    await this.expensesService.remove(+id, user);
 
-    if (!removedExpense || removedExpense.affected === 0)
-      throw new NotFoundException('No expenses that you own were found using this id.')
-
-    return 'Expense removed successfully.';
+    return {
+      message: 'Expense deleted successfully.',
+    };
   }
 }

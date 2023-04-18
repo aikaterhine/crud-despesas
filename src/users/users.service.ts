@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { toUserDto } from './utils/users.utils';
 
@@ -13,29 +12,27 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return this.userRepository.save(createUserDto);
-  }
-  
-  /*findAll() {
-    return this.userRepository.find();
-  }
-  */
+  async create(createUserDto: CreateUserDto) {
+    const result = await this.userRepository.save(createUserDto);
 
-  findOne(email: string) {
-    return this.userRepository.findOne({ where: { email } });
+    if (!result) throw new BadRequestException('Error creating your user.')
+
+    return toUserDto(result);
+  }
+
+  async findOne(email: string) {
+    const result = await this.userRepository.findOne({ where: { email } });
+
+    if (!result) throw new NotFoundException('No user registered at this email address.')
+
+    return result;
   }
 
   async findOneByEmail(email: string) {
-    const user = await this.userRepository.findOneBy({ email: email });
-    return toUserDto(user);
-  }
+    const result = await this.userRepository.findOneBy({ email: email });
 
-  /*update(id: string, updateUserDto: UpdateUserDto) {
-    return this.userRepository.update(id, updateUserDto);
-  }
+    if (!result) throw new NotFoundException('No user registered at this email address.')
 
-  remove(id: string) {
-    return this.userRepository.delete(id);
-  }*/
+    return toUserDto(result);
+  }
 }

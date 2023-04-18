@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
@@ -16,6 +16,9 @@ export class MailService {
         },
     };
 
-    await this.mailerService.sendMail(mailOptions);
+    const result = await this.mailerService.sendMail(mailOptions);
+
+    if (!result)
+      throw new BadRequestException('Registered expense email not sent.');
   }
 }
